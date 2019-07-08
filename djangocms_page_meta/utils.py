@@ -40,6 +40,7 @@ def get_page_meta(page, language):
         return None
     gplus_server = 'https://plus.google.com'
     meta = cache.get(meta_key)
+    meta = None
     if not meta:
         meta = Meta()
         title = page.get_title_obj(language)
@@ -52,54 +53,60 @@ def get_page_meta(page, language):
         # This is new ##############################################################################
         page_image = None
         for place in page.get_placeholders():
-            plugins = place.get_plugin_tree_order(language)
-            for plugin in plugins:
-                # Intro header
+            plugin_ids = place.get_plugin_tree_order(language)
+            plugins = place.get_plugins(language)
+            for plugin_id in plugin_ids:
                 try:
-                    header = plugin.plugins_introheader
-                    page_image = header.image
-                    break;
-                except ObjectDoesNotExist:
+                    plugin = plugins.get(pk=plugin_id)
+                except Exception:
                     pass
+                else:
+                    # Intro header
+                    try:
+                        header = plugin.plugins_introheader
+                        page_image = header.image
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
-                # Person header header
-                try:
-                    header = plugin.plugins_personheader
-                    page_image = header.person.photo
-                    break;
-                except ObjectDoesNotExist:
-                    pass
+                    # Person header header
+                    try:
+                        header = plugin.plugins_personheader
+                        page_image = header.person.photo
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
-                # Theme header
-                try:
-                    header = plugin.plugins_themeheader
-                    page_image = header.image
-                    break;
-                except ObjectDoesNotExist:
-                    pass
+                    # Theme header
+                    try:
+                        header = plugin.plugins_themeheader
+                        page_image = header.image
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
-                # Longread header
-                try:
-                    header = plugin.plugins_longreadheader
-                    page_image = header.image
-                    break;
-                except ObjectDoesNotExist:
-                    pass
+                    # Longread header
+                    try:
+                        header = plugin.plugins_longreadheader
+                        page_image = header.image
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
-                # Journal header
-                try:
-                    header = plugin.plugins_journalheader
-                    page_image = header.image
-                    break;
-                except ObjectDoesNotExist:
-                    pass
+                    # Journal header
+                    try:
+                        header = plugin.plugins_journalheader
+                        page_image = header.image
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
-                try:
-                    media = plugin.plugins_media
-                    page_image = media.image
-                    break;
-                except ObjectDoesNotExist:
-                    pass
+                    try:
+                        media = plugin.plugins_media
+                        page_image = media.image
+                        break;
+                    except ObjectDoesNotExist:
+                        pass
 
             if page_image:
                 break;
