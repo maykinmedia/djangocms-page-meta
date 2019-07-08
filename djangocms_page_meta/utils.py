@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language_from_request
@@ -47,6 +48,65 @@ def get_page_meta(page, language):
         meta.title = page.get_page_title(language)
         if not meta.title:
             meta.title = page.get_title(language)
+
+        # This is new ##############################################################################
+        page_image = None
+        for place in page.get_placeholders():
+            plugins = place.get_plugins_list(language)
+            for plugin in plugins:
+                # Intro header
+                try:
+                    header = plugin.plugins_introheader
+                    page_image = header.image
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+                # Person header header
+                try:
+                    header = plugin.plugins_personheader
+                    page_image = header.person.photo
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+                # Theme header
+                try:
+                    header = plugin.plugins_themeheader
+                    page_image = header.image
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+                # Longread header
+                try:
+                    header = plugin.plugins_longreadheader
+                    page_image = header.image
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+                # Journal header
+                try:
+                    header = plugin.plugins_journalheader
+                    page_image = header.image
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+                try:
+                    media = plugin.plugins_media
+                    page_image = media.image
+                    break;
+                except ObjectDoesNotExist:
+                    pass
+
+            if page_image:
+                break;
+
+        if page_image:
+            meta.image = page_image.url
+        # This is new ##############################################################################
 
         if title.meta_description:
             meta.description = title.meta_description.strip()
