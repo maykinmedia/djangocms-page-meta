@@ -51,7 +51,7 @@ def get_page_meta(page, language):
         # This is new ##############################################################################
         page_image = None
         for place in page.get_placeholders():
-            plugins = place.get_plugins_list(language)
+            plugins = place.get_plugin_tree_order(language)
             for plugin in plugins:
                 # Intro header
                 try:
