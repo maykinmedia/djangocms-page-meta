@@ -50,71 +50,6 @@ def get_page_meta(page, language):
         if not meta.title:
             meta.title = page.get_title(language)
 
-        # This is new ##############################################################################
-        page_image = None
-        for place in page.get_placeholders():
-            plugin_ids = place.get_plugin_tree_order(language)
-            plugins = place.get_plugins(language)
-            for plugin_id in plugin_ids:
-                try:
-                    plugin = plugins.get(pk=plugin_id)
-                except Exception:
-                    pass
-                else:
-                    # Intro header
-                    try:
-                        header = plugin.plugins_introheader
-                        page_image = header.image
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-                    # Person header header
-                    try:
-                        header = plugin.plugins_personheader
-                        page_image = header.person.photo
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-                    # Theme header
-                    try:
-                        header = plugin.plugins_themeheader
-                        page_image = header.image
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-                    # Longread header
-                    try:
-                        header = plugin.plugins_longreadheader
-                        page_image = header.image
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-                    # Journal header
-                    try:
-                        header = plugin.plugins_journalheader
-                        page_image = header.image
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-                    try:
-                        media = plugin.plugins_media
-                        page_image = media.image
-                        break;
-                    except ObjectDoesNotExist:
-                        pass
-
-            if page_image:
-                break;
-
-        if page_image:
-            meta.image = page_image.url
-        # This is new ##############################################################################
-
         if title.meta_description:
             meta.description = title.meta_description.strip()
         try:
@@ -185,6 +120,67 @@ def get_page_meta(page, language):
                     pass
             if not meta.image and pagemeta.image:
                 meta.image = pagemeta.image.canonical_url or pagemeta.image.url
+            if not meta.image:
+                # GET IMAGE FROM PAGE ##############################################################
+                for place in page.get_placeholders():
+                    plugin_ids = place.get_plugin_tree_order(language)
+                    plugins = place.get_plugins(language)
+                    for plugin_id in plugin_ids:
+                        try:
+                            plugin = plugins.get(pk=plugin_id)
+                        except Exception:
+                            pass
+                        else:
+                            # Intro header
+                            try:
+                                header = plugin.plugins_introheader
+                                meta.image = header.image.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Person header header
+                            try:
+                                header = plugin.plugins_personheader
+                                meta.image = header.person.photo.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Theme header
+                            try:
+                                header = plugin.plugins_themeheader
+                                meta.image = header.image.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Longread header
+                            try:
+                                header = plugin.plugins_longreadheader
+                                meta.image = header.image.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Journal header
+                            try:
+                                header = plugin.plugins_journalheader
+                                meta.image = header.image.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                            try:
+                                media = plugin.plugins_media
+                                meta.image = media.image.url
+                                break;
+                            except ObjectDoesNotExist:
+                                pass
+
+                    if meta.image:
+                        break;
+                # GET IMAGE FROM PAGE ##############################################################
             for item in pagemeta.extra.all():
                 attribute = item.attribute
                 if not attribute:
