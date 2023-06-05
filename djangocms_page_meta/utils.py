@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language_from_request
@@ -143,7 +144,7 @@ def get_page_meta(page, language):
                             try:
                                 header = plugin.plugins_introheader
                                 meta.image = header.image.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
@@ -151,7 +152,7 @@ def get_page_meta(page, language):
                             try:
                                 header = plugin.plugins_personheader
                                 meta.image = header.person.photo.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
@@ -159,7 +160,7 @@ def get_page_meta(page, language):
                             try:
                                 header = plugin.plugins_themeheader
                                 meta.image = header.image.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
@@ -167,7 +168,7 @@ def get_page_meta(page, language):
                             try:
                                 header = plugin.plugins_longreadheader
                                 meta.image = header.image.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
@@ -175,19 +176,19 @@ def get_page_meta(page, language):
                             try:
                                 header = plugin.plugins_journalheader
                                 meta.image = header.image.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
                             try:
                                 media = plugin.plugins_media
                                 meta.image = media.image.url
-                                break;
+                                break
                             except ObjectDoesNotExist:
                                 pass
 
                     if meta.image:
-                        break;
+                        break
                 # GET IMAGE FROM PAGE ##############################################################
             for item in pagemeta.extra.all():
                 attribute = item.attribute
