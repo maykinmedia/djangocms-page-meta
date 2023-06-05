@@ -4,6 +4,65 @@
 History
 *******
 
+.. towncrier release notes start
+
+1.2.0 (2023-05-08)
+==================
+
+Features
+--------
+
+- Update GH actions / linting configuration (#157)
+- Add support for Django 4.2 / django CMS 3.11
+
+
+1.1.0 (2022-08-27)
+==================
+
+Bugfixes
+--------
+
+- Skip creating toolbar item in page types (#150)
+- Add support for Django 3.2 / django CMS 3.10 (#151)
+
+
+1.0.1 (2020-12-21)
+==================
+
+Features
+--------
+
+- Add configuration for django-app-enabler (#141)
+
+
+1.0.0 (2020-11-18)
+==================
+
+Features
+--------
+
+- Update tooling and drop Python 2 / Django < 2.2 compatibility (#135)
+- Add support for django CMS 3.8 / Django 3.1
+- Add support for django-meta 2.0
+
+
+Bugfixes
+--------
+
+- Fix setup.cfg and pyproject.toml package name (#138)
+
+0.10.0 (2019-12-27)
+===================
+
+* Move from djangocms-helper to django-app-helper
+* Improve toolbar performance
+
+0.9.0 (2019-08-22)
+==================
+
+* Add support for django CMS 3.7 / Django 2.2
+* Remove support for Django < 1.11 / Python 3.4
+
 0.8.5 (2019-03-22)
 ==================
 
