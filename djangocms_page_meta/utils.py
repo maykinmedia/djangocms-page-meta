@@ -31,7 +31,7 @@ def get_page_meta(page, language):
     from django.core.cache import cache
     from meta.views import Meta
 
-    from .models import PageMeta, TitleMeta
+    from .models import DefaultMetaImage, PageMeta, TitleMeta
 
     try:
         meta_key = get_cache_key(page, language)
@@ -42,6 +42,7 @@ def get_page_meta(page, language):
     if not meta:
         meta = Meta()
         title = page.get_title_obj(language)
+        default_meta_image = DefaultMetaImage.objects.first().image
         meta.extra_custom_props = []
 
         meta.title = page.get_page_title(language)
@@ -65,7 +66,6 @@ def get_page_meta(page, language):
                 meta.twitter_description = meta.description
             if titlemeta.image:
                 meta.image = title.titlemeta.image.canonical_url or title.titlemeta.image.url
-                meta.schemaorg_image = meta.image
             meta.schemaorg_description = titlemeta.schemaorg_description.strip()
             if not meta.schemaorg_description:
                 meta.schemaorg_description = meta.description
@@ -84,17 +84,17 @@ def get_page_meta(page, language):
                 meta.schemaorg_description = meta.description
                 meta.twitter_description = meta.description
         defaults = {
-            "object_type": meta_settings.FB_TYPE,
-            "og_type": meta_settings.FB_TYPE,
-            "og_app_id": meta_settings.FB_APPID,
-            "fb_pages": meta_settings.FB_PAGES,
-            "og_profile_id": meta_settings.FB_PROFILE_ID,
-            "og_publisher": meta_settings.FB_PUBLISHER,
-            "og_author_url": meta_settings.FB_AUTHOR_URL,
-            "twitter_type": meta_settings.TWITTER_TYPE,
-            "twitter_site": meta_settings.TWITTER_SITE,
-            "twitter_author": meta_settings.TWITTER_AUTHOR,
-            "schemaorg_type": meta_settings.SCHEMAORG_TYPE,
+            "object_type": meta_settings.get_setting("FB_TYPE"),
+            "og_type": meta_settings.get_setting("FB_TYPE"),
+            "og_app_id": meta_settings.get_setting("FB_APPID"),
+            "fb_pages": meta_settings.get_setting("FB_PAGES"),
+            "og_profile_id": meta_settings.get_setting("FB_PROFILE_ID"),
+            "og_publisher": meta_settings.get_setting("FB_PUBLISHER"),
+            "og_author_url": meta_settings.get_setting("FB_AUTHOR_URL"),
+            "twitter_type": meta_settings.get_setting("TWITTER_TYPE"),
+            "twitter_site": meta_settings.get_setting("TWITTER_SITE"),
+            "twitter_author": meta_settings.get_setting("TWITTER_AUTHOR"),
+            "schemaorg_type": meta_settings.get_setting("SCHEMAORG_TYPE"),
             "schemaorg_datePublished": page.publication_date.isoformat() if page.publication_date else None,
             "schemaorg_dateModified": page.changed_date.isoformat() if page.changed_date else None,
         }
@@ -109,6 +109,7 @@ def get_page_meta(page, language):
             meta.twitter_site = pagemeta.twitter_site
             meta.twitter_author = pagemeta.twitter_author
             meta.schemaorg_type = pagemeta.schemaorg_type
+            meta.robots = pagemeta.robots_list
             if page.publication_date:
                 meta.published_time = page.publication_date.isoformat()
             if page.changed_date:
@@ -200,8 +201,11 @@ def get_page_meta(page, language):
         for attr, val in defaults.items():
             if not getattr(meta, attr, "") and val:
                 setattr(meta, attr, val)
+        if not meta.image and default_meta_image:
+            meta.image = default_meta_image.canonical_url or default_meta_image.url
         meta.url = page.get_absolute_url(language)
         meta.schemaorg_url = meta.url
+        meta.schemaorg_image = meta.image
         cache.set(meta_key, meta)
     return meta
 

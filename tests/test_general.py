@@ -5,7 +5,7 @@ from django.test import override_settings
 from django.utils.functional import SimpleLazyObject
 
 from djangocms_page_meta import models
-from djangocms_page_meta.forms import TitleMetaAdminForm
+from djangocms_page_meta.forms import PageMetaAdminForm, TitleMetaAdminForm
 from djangocms_page_meta.templatetags.page_meta_tags import MetaFromPage
 from djangocms_page_meta.utils import get_cache_key, get_page_meta
 
@@ -24,6 +24,37 @@ class PageMetaUtilsTest(BaseTest):
         tag = MetaFromPage.render_tag(MetaFromPage(Parser(dummy_tokens), dummy_tokens), context, None, "meta")
         self.assertFalse(tag)
         self.assertTrue(context["meta"])
+
+    def test_page_default_meta_image(self):
+        page, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page)
+        for key, val in self.page_data.items():
+            setattr(page_meta, key, val)
+        for key, val in self.og_data.items():
+            setattr(page_meta, key, val)
+        page_meta.save()
+        page.reload()
+        default_meta_image = models.DefaultMetaImage.objects.first()
+        default_meta_image.image = self.create_filer_image_object()
+        default_meta_image.save()
+        meta = get_page_meta(page, "en")
+        self.assertEqual(meta.image, f"http://example.com{default_meta_image.image.url}")
+
+    def test_page_default_meta_image_with_pagemeta_image(self):
+        page, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page)
+        for key, val in self.page_data.items():
+            setattr(page_meta, key, val)
+        for key, val in self.og_data.items():
+            setattr(page_meta, key, val)
+        page_meta.image = self.create_filer_image(self.user, "page_meta_image.jpg")
+        page_meta.save()
+        page.reload()
+        default_meta_image = models.DefaultMetaImage.objects.first()
+        default_meta_image.image = self.create_filer_image_object()
+        default_meta_image.save()
+        meta = get_page_meta(page, "en")
+        self.assertEqual(meta.image, f"http://example.com{page_meta.image.url}")
 
     def test_page_meta_og(self):
         """
@@ -72,6 +103,35 @@ class PageMetaUtilsTest(BaseTest):
         self.assertEqual(meta.twitter_author, self.twitter_data["twitter_author"])
         self.assertEqual(meta.twitter_type, self.twitter_data["twitter_type"])
         self.assertEqual(meta.get_domain(), settings.META_SITE_DOMAIN)
+
+    def test_page_meta_robots_no_data(self):
+        page, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page)
+        page.reload()
+        meta = get_page_meta(page, "en")
+        self.assertEqual(meta.robots, page_meta.robots_list)
+
+    def test_page_meta_robots_single(self):
+        page, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page)
+        for key, val in self.robots_data_single.items():
+            setattr(page_meta, key, val)
+        page_meta.save()
+        page.reload()
+        meta = get_page_meta(page, "en")
+        self.assertEqual(page_meta.robots, self.robots_data_single["robots"])
+        self.assertEqual(meta.robots, page_meta.robots_list)
+
+    def test_page_meta_robots_multiple(self):
+        page, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page)
+        for key, val in self.robots_data_multiple.items():
+            setattr(page_meta, key, val)
+        page_meta.save()
+        page.reload()
+        meta = get_page_meta(page, "en")
+        self.assertEqual(page_meta.robots, self.robots_data_multiple["robots"])
+        self.assertEqual(meta.robots, page_meta.robots_list)
 
     def test_none_page(self):
         meta = get_page_meta(None, "en")
@@ -167,6 +227,7 @@ class PageMetaUtilsTest(BaseTest):
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
         title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        default_meta_image = models.DefaultMetaImage.objects.first()
         page_attr = models.GenericMetaAttribute.objects.create(
             page=page_meta, attribute="custom", name="attr", value="foo"
         )
@@ -176,8 +237,20 @@ class PageMetaUtilsTest(BaseTest):
 
         self.assertEqual(str(page_meta), f"Page Meta for {page1}")
         self.assertEqual(str(title_meta), f"Title Meta for {page1.get_title_obj('en')}")
+        self.assertEqual(str(default_meta_image), f"{default_meta_image.pk}")
         self.assertEqual(str(page_attr), f"Attribute {page_attr.name} for {page_meta}")
         self.assertEqual(str(title_attr), f"Attribute {title_attr.name} for {title_meta}")
+        default_meta_image.image = self.create_filer_image_object()
+        default_meta_image.save()
+        self.assertEqual(str(default_meta_image), "test_image.jpg")
+
+    def test_robots_list_property(self):
+        page1, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page1)
+        self.assertIsNone(page_meta.robots_list)
+        page_meta.robots = "['noindex', 'notranslate', 'nosnippet']"
+        page_meta.save()
+        self.assertEqual(page_meta.robots_list, ["noindex", "notranslate", "nosnippet"])
 
     def test_cache_cleanup_on_update_delete_meta(self):
         """
@@ -261,3 +334,33 @@ class PageMetaUtilsTest(BaseTest):
 
             form = TitleMetaAdminForm(data={"twitter_description": "mini text"}, instance=page_meta)
             self.assertTrue(form.is_valid())
+
+    def test_robots_form_initial(self):
+        page1, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page1)
+        form = PageMetaAdminForm(instance=page_meta)
+        self.assertIsNone(form.initial["robots"])
+        page_meta.robots = "['noindex']"
+        page_meta.save()
+        form = PageMetaAdminForm(instance=page_meta)
+        self.assertEqual(form.initial["robots"], page_meta.robots_list)
+        page_meta.robots = "['noindex', 'nofollow', 'noimageindex']"
+        page_meta.save()
+        form = PageMetaAdminForm(instance=page_meta)
+        self.assertEqual(form.initial["robots"], page_meta.robots_list)
+
+    def test_robots_form_save(self):
+        page1, __ = self.get_pages()
+        page_meta = models.PageMeta.objects.create(extended_object=page1)
+        form = PageMetaAdminForm(data={"robots": ["noindex"]}, instance=page_meta)
+        form.save()
+        page_meta.refresh_from_db()
+        self.assertEqual(page_meta.robots, "['noindex']")
+        form = PageMetaAdminForm(data={"robots": ["noindex", "nositelinkssearchbox"]}, instance=page_meta)
+        form.save()
+        page_meta.refresh_from_db()
+        self.assertEqual(page_meta.robots, "['noindex', 'nositelinkssearchbox']")
+        form = PageMetaAdminForm(data={"robots": []}, instance=page_meta)
+        form.save()
+        page_meta.refresh_from_db()
+        self.assertEqual(page_meta.robots, "[]")

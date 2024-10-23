@@ -11,8 +11,9 @@ Assigning meta information to pages / titles
 Meta information can be assigned from the admin interface or the toolbar.
 
 In the toolbar you will find a ``Meta-information`` submenu in the
-``Page`` menu, with two or more sub-items:
+``Page`` menu, with three or more sub-items:
 
+* Default meta image: it allows to add a default meta image, that will be used in all pages if no specific page image is set.
 * Common: it allows to edit page-wide (language independent) meta information;
 * One entry per active language to edit language dependent information.
 
@@ -60,9 +61,9 @@ Supported attributes
 ********************
 
 ``djangocms-page-meta`` currently offers partial support for `OpenGraph`_,
-`Twitter Cards`_ and `Schema.org microdata`_. As a generic application
-``djangocms-page-meta`` cannot cover every use case while still being
-useful to most people.
+`Twitter Cards`_, `Schema.org microdata`_ and robots meta tag. As a generic
+application ``djangocms-page-meta`` cannot cover every use case while
+still being useful to most people.
 
 
 Generic HTML

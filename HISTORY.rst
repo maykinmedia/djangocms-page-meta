@@ -6,6 +6,72 @@ History
 
 .. towncrier release notes start
 
+1.4.4 (2024-01-16)
+==================
+
+Features
+--------
+
+- Switch to Coveralls Github action (#189)
+
+
+Bugfixes
+--------
+
+- Pin Django CMS version < 4 (#197)
+
+
+1.4.3 (2023-09-27)
+==================
+
+Bugfixes
+--------
+
+- Set default_auto_field in AppConfig to avoid migrations problem if DEFAULT_AUTO_FIELD is different (#181)
+
+
+1.4.2 (2023-09-26)
+==================
+
+Bugfixes
+--------
+
+- Bump django-meta version, fix settings accordingly (#178)
+
+
+1.4.1 (2023-09-20)
+==================
+
+Features
+--------
+
+- Migrate to bump-my-version, fix python/django/djangocms versions in README (#176)
+
+
+Bugfixes
+--------
+
+- Update filer dependency to avoid migration error from 155.feature (#173)
+
+
+1.4.0 (2023-08-31)
+==================
+
+Features
+--------
+
+- Add DefaultMetaImage model to handle default meta image (#155)
+
+
+1.3.0 (2023-08-07)
+==================
+
+Features
+--------
+
+- Add meta robots (#116)
+
+
 1.2.0 (2023-05-08)
 ==================
 
