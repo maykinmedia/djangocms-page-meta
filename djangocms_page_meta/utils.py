@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language_from_request
@@ -37,6 +38,7 @@ def get_page_meta(page, language):
     except AttributeError:
         return None
     meta = cache.get(meta_key)
+    meta = None
     if not meta:
         meta = Meta()
         title = page.get_title_obj(language)
@@ -128,6 +130,67 @@ def get_page_meta(page, language):
                     pass
             if not meta.image and pagemeta.image:
                 meta.image = pagemeta.image.canonical_url or pagemeta.image.url
+            if not meta.image:
+                # GET IMAGE FROM PAGE ##############################################################
+                for place in page.get_placeholders():
+                    plugin_ids = place.get_plugin_tree_order(language)
+                    plugins = place.get_plugins(language)
+                    for plugin_id in plugin_ids:
+                        try:
+                            plugin = plugins.get(pk=plugin_id)
+                        except Exception:
+                            pass
+                        else:
+                            # Intro header
+                            try:
+                                header = plugin.plugins_introheader
+                                meta.image = header.image.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Person header header
+                            try:
+                                header = plugin.plugins_personheader
+                                meta.image = header.person.photo.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Theme header
+                            try:
+                                header = plugin.plugins_themeheader
+                                meta.image = header.image.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Longread header
+                            try:
+                                header = plugin.plugins_longreadheader
+                                meta.image = header.image.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                            # Journal header
+                            try:
+                                header = plugin.plugins_journalheader
+                                meta.image = header.image.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                            try:
+                                media = plugin.plugins_media
+                                meta.image = media.image.url
+                                break
+                            except ObjectDoesNotExist:
+                                pass
+
+                    if meta.image:
+                        break
+                # GET IMAGE FROM PAGE ##############################################################
             for item in pagemeta.extra.all():
                 attribute = item.attribute
                 if not attribute:
