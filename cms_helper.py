@@ -11,6 +11,7 @@ HELPER_SETTINGS = dict(
     NOSE_ARGS=[
         "-s",
     ],
+    CMS_CONFIRM_VERSION4=True,
     ROOT_URLCONF="tests.test_utils.urls",
     INSTALLED_APPS=[
         "easy_thumbnails",
@@ -18,7 +19,7 @@ HELPER_SETTINGS = dict(
         "taggit",
         "taggit_autosuggest",
         "meta",
-        "djangocms_page_tags",
+        # "djangocms_page_tags",
         "tests.test_utils",
     ],
     LANGUAGE_CODE="en",
