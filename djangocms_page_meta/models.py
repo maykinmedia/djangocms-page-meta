@@ -1,8 +1,15 @@
 import ast
 
-from cms.extensions import PageExtension, TitleExtension
+try:
+    from cms.models import Page, PageContent
+    from cms.extensions import PageExtension, PageContentExtension
+except ImportError:
+    from cms.extensions import PageExtension, TitleExtension as PageContentExtension
+    from cms.models import Page, Title as PageContent
+
+
 from cms.extensions.extension_pool import extension_pool
-from cms.models import Page, Title
+
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
@@ -98,7 +105,8 @@ class PageMeta(PageExtension):
 extension_pool.register(PageMeta)
 
 
-class TitleMeta(TitleExtension):
+#TODO: renamed too PageContentExtension
+class TitleMeta(PageContentExtension):
     image = FilerFileField(
         null=True,
         blank=True,
@@ -206,7 +214,7 @@ def cleanup_page(sender, instance, **kwargs):
         cache.delete(key)
 
 
-@receiver(pre_delete, sender=Title)
+@receiver(pre_delete, sender=PageContent)
 def cleanup_title(sender, instance, **kwargs):
     key = get_cache_key(instance.page, instance.language)
     cache.delete(key)
