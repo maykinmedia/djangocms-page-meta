@@ -9,7 +9,7 @@ from djangocms_page_meta.forms import PageMetaAdminForm, TitleMetaAdminForm
 from djangocms_page_meta.templatetags.page_meta_tags import MetaFromPage
 from djangocms_page_meta.utils import get_cache_key, get_page_meta
 
-from . import BaseTest, DummyTokens
+from .base import BaseTest, DummyTokens
 
 
 class PageMetaUtilsTest(BaseTest):

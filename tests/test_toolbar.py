@@ -12,7 +12,7 @@ from djangocms_page_meta.cms_toolbars import (
 )
 from djangocms_page_meta.models import DefaultMetaImage, PageMeta, TitleMeta
 
-from . import BaseTest
+from .base import BaseTest
 
 
 class ToolbarTest(BaseTest):
@@ -22,7 +22,7 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        request = self.get_page_request(None, self.user, "/", edit=True)
+        request = self.get_toolbar_request(None, self.user, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -35,7 +35,7 @@ class ToolbarTest(BaseTest):
         from cms.toolbar.toolbar import CMSToolbar
 
         page1, __ = self.get_pages()
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user_staff, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -56,7 +56,7 @@ class ToolbarTest(BaseTest):
         page1.save()
         self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
         self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user_staff, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
@@ -72,7 +72,7 @@ class ToolbarTest(BaseTest):
         page1, __ = self.get_pages()
         self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
         self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user_staff, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
@@ -92,7 +92,7 @@ class ToolbarTest(BaseTest):
         page1, __ = self.get_pages()
         self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
         self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user_staff, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -128,7 +128,7 @@ class ToolbarTest(BaseTest):
 
         page1, __ = self.get_pages()
         with self.settings(CMS_LANGUAGES=NEW_CMS_LANGS):
-            request = self.get_page_request(page1, self.user, "/", edit=True)
+            request = self.get_toolbar_request(page1, self.user, "/", edit=True)
             toolbar = CMSToolbar(request)
             toolbar.get_left_items()
             page_menu = toolbar.menus["page"]
@@ -154,7 +154,7 @@ class ToolbarTest(BaseTest):
         page_ext = PageMeta.objects.create(extended_object=page1)
         title_meta = TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
         default_meta_image = DefaultMetaImage.objects.first()
-        request = self.get_page_request(page1, self.user, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user, "/", edit=True)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]

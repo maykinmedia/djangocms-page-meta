@@ -6,7 +6,7 @@ from django.test.client import RequestFactory
 from djangocms_page_meta.admin import DefaultMetaImageAdmin
 from djangocms_page_meta.models import DefaultMetaImage
 
-from . import BaseTest
+from .base import BaseTest
 
 page_admin = admin.site._registry[Page]
 
@@ -17,7 +17,7 @@ class AdminPageTest(BaseTest):
         Test that the returned form has not been modified by the meta patch
         when no page object is specified
         """
-        request = self.get_page_request(None, self.user, "/", edit=True)
+        request = self.get_toolbar_request(None, self.user, "/", edit=True)
         form = page_admin.get_form(request)
         self.assertEqual(form.base_fields.get("meta_description"), None)
 
@@ -27,7 +27,7 @@ class AdminPageTest(BaseTest):
         """
         page1, _page2 = self.get_pages()
 
-        request = self.get_page_request(page1, self.user, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user, "/", edit=True)
         form = page_admin.get_form(request, page1)
         self.assertEqual(form.base_fields.get("meta_description"), None)
 
@@ -40,7 +40,7 @@ class AdminPageTest(BaseTest):
         title.meta_description = "something"
         title.save()
 
-        request = self.get_page_request(page1, self.user, "/", edit=True)
+        request = self.get_toolbar_request(page1, self.user, "/", edit=True)
         form = page_admin.get_form(request, page1)
         self.assertNotEqual(form.base_fields.get("meta_description"), None)
 

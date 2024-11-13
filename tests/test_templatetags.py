@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from djangocms_page_meta.models import GenericMetaAttribute, PageMeta, TitleMeta
 
-from . import BaseTest
+from .base import BaseTest
 
 
 class TemplateMetaTest(BaseTest):
