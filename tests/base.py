@@ -5,8 +5,8 @@ from app_helper.base_test import BaseTestCase
 from app_helper.utils import reload_urls
 from django.conf import settings
 from django.core.cache import cache
-
 from django.test.client import RequestFactory
+
 
 class DummyTokens(list):
     def __init__(self, *tokens):
@@ -68,7 +68,6 @@ class BaseTest(BaseTestCase):
         super().setUp()
         cache.clear()
 
-
     def get_toolbar_request(self, page, user, path=None, edit=False, lang="en", use_middlewares=False, secure=False):
         """
         Changes CMS_TOOLBAR_URL__ENABLE to CMS_TOOLBAR_URL__ENABLE from parent function
@@ -105,7 +104,6 @@ class BaseTest(BaseTestCase):
             has_apphook = has_apphook or "apphook" in main_data
             for lang in languages[1:]:
                 if lang in page_data:
-                    publish = False
                     title_data = deepcopy(page_data[lang])
                     title_data["language"] = lang
                     title_data["page"] = page

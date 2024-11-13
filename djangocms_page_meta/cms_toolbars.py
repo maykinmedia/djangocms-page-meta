@@ -1,4 +1,3 @@
-from cms.api import get_page_draft
 from cms.cms_toolbars import PAGE_MENU_SECOND_BREAK
 from cms.toolbar.items import Break
 from cms.toolbar_base import CMSToolbar

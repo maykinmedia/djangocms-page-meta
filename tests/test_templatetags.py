@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 from djangocms_page_meta.models import GenericMetaAttribute, PageMeta, TitleMeta
-from cms.models.pagemodel import Page
 
 from .base import BaseTest
 
@@ -140,7 +137,7 @@ class TemplateMetaTest(BaseTest):
         content_ext_en = content_en.titlemeta
 
         # Italian language
-        response  = self.client.get(page1.get_absolute_url("it"))
+        response = self.client.get(page1.get_absolute_url("it"))
         response.render()
         self.assertContains(response, '<meta name="description" content="base lorem ipsum - italian">')
         self.assertContains(response, '<meta name="twitter:description" content="base lorem ipsum - italian">')

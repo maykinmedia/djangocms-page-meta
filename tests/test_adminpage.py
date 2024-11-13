@@ -1,3 +1,5 @@
+from unittest import skip
+
 from cms.models import Page
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
@@ -5,8 +7,6 @@ from django.test.client import RequestFactory
 
 from djangocms_page_meta.admin import DefaultMetaImageAdmin
 from djangocms_page_meta.models import DefaultMetaImage
-
-from unittest import skip
 
 from .base import BaseTest
 

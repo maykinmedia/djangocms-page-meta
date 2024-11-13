@@ -1,8 +1,10 @@
 from cms.admin.pageadmin import PageAdmin
+
 try:
-    from cms.extensions import PageExtensionAdmin, PageContentExtensionAdmin
+    from cms.extensions import PageContentExtensionAdmin, PageExtensionAdmin
 except ImportError:
     from cms.extensions import PageExtensionAdmin, TitleExtensionAdmin as PageContentExtensionAdmin
+
 from cms.utils import get_language_from_request
 from django.conf import settings
 from django.contrib import admin
