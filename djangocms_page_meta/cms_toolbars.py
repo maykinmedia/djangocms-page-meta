@@ -25,7 +25,8 @@ PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
 class PageToolbarMeta(CMSToolbar):
     def populate(self):
         # always use draft if we have a page
-        self.page = get_page_draft(self.request.current_page)
+        # self.page = get_page_draft(self.request.current_page)
+        self.page = self.request.current_page
         if not self.page:
             # Nothing to do
             return
