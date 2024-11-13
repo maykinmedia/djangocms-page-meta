@@ -151,9 +151,9 @@ class PageMetaUtilsTest(BaseTest):
         page1, page2 = self.get_pages()
         page_ext = PageTags.objects.create(extended_object=page1)
         page_ext.tags.add(*tags1)
-        title_ext = TitleTags.objects.create(extended_object=page1.get_title_obj("en"))
+        title_ext = TitleTags.objects.create(extended_object=page1.get_content_obj("en"))
         title_ext.tags.add(*tags2)
-        title_ext = TitleTags.objects.create(extended_object=page2.get_title_obj("en"))
+        title_ext = TitleTags.objects.create(extended_object=page2.get_content_obj("en"))
         title_ext.tags.add(*tags2)
 
         for page in (page1, page2):
@@ -182,7 +182,7 @@ class PageMetaUtilsTest(BaseTest):
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
         page_meta.save()
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
         title_meta.save()
 
         models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
@@ -203,7 +203,6 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
         models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
         models.GenericMetaAttribute.objects.create(title=title_meta, attribute="custom", name="attr", value="bar")
 
@@ -219,6 +218,7 @@ class PageMetaUtilsTest(BaseTest):
         title_meta = models.TitleMeta.objects.get(extended_object=public.get_title_obj("en"))
         self.assertEqual(page_meta.extra.count(), 1)
         self.assertEqual(title_meta.extra.count(), 1)
+          title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
 
     def test_str_methods(self):
         """
@@ -226,7 +226,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
         default_meta_image = models.DefaultMetaImage.objects.first()
         page_attr = models.GenericMetaAttribute.objects.create(
             page=page_meta, attribute="custom", name="attr", value="foo"
@@ -236,7 +236,7 @@ class PageMetaUtilsTest(BaseTest):
         )
 
         self.assertEqual(str(page_meta), f"Page Meta for {page1}")
-        self.assertEqual(str(title_meta), f"Title Meta for {page1.get_title_obj('en')}")
+        self.assertEqual(str(title_meta), f"Title Meta for {page1.get_content_obj('en')}")
         self.assertEqual(str(default_meta_image), f"{default_meta_image.pk}")
         self.assertEqual(str(page_attr), f"Attribute {page_attr.name} for {page_meta}")
         self.assertEqual(str(title_attr), f"Attribute {title_attr.name} for {title_meta}")
@@ -258,7 +258,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
 
         # cache objects
         for language in page1.get_languages():
@@ -299,7 +299,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
 
         # cache objects - cache keys must be pre calculated as the page will not exist anymore when running the
         # asserts

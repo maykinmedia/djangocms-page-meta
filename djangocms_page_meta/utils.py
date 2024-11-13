@@ -39,7 +39,7 @@ def get_page_meta(page, language):
     meta = cache.get(meta_key)
     if not meta:
         meta = Meta()
-        title = page.get_title_obj(language)
+        title = page.get_content_obj(language)
         default_meta_image = DefaultMetaImage.objects.first().image
         meta.extra_custom_props = []
 

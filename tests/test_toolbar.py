@@ -152,7 +152,7 @@ class ToolbarTest(BaseTest):
 
         page1, __ = self.get_pages()
         page_ext = PageMeta.objects.create(extended_object=page1)
-        title_meta = TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
         default_meta_image = DefaultMetaImage.objects.first()
         request = self.get_toolbar_request(page1, self.user, "/", edit=True)
         toolbar = CMSToolbar(request)
@@ -177,7 +177,7 @@ class ToolbarTest(BaseTest):
         )
         url_change = False
         url_add = False
-        for title in page1.title_set.all():
+        for title in page1.pagecontent_set.all():
             language = get_language_object(title.language)
             titlemeta_menu = meta_menu.find_items(ModalItem, name="{}...".format(language["name"]))
             self.assertEqual(len(titlemeta_menu), 1)
