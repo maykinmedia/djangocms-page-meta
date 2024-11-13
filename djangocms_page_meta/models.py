@@ -226,6 +226,7 @@ def cleanup_pagemeta(sender, instance, **kwargs):
     for language in instance.extended_object.get_languages():
         key = get_cache_key(instance.extended_object, language)
         cache.delete(key)
+    instance.extended_object.clear_cache()
 
 
 @receiver(post_save, sender=TitleMeta)
@@ -233,7 +234,7 @@ def cleanup_pagemeta(sender, instance, **kwargs):
 def cleanup_titlemeta(sender, instance, **kwargs):
     key = get_cache_key(instance.extended_object.page, instance.extended_object.language)
     cache.delete(key)
-
+    instance.extended_object.page.clear_cache()
 
 if registry:
     registry.add_to_head(get_metatags)
