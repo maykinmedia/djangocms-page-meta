@@ -8,7 +8,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test page-level templatetags
         """
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
         for key, val in self.og_data.items():
             setattr(page_ext, key, val)
@@ -35,7 +35,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test page-level no robots templatetags
         """
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
         page_ext.save()
         page1.save()
@@ -47,7 +47,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test page-level robots single templatetags
         """
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
         for key, val in self.robots_data_single.items():
             setattr(page_ext, key, val)
@@ -61,7 +61,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test page-level robots multiple templatetags
         """
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
         for key, val in self.robots_data_multiple.items():
             setattr(page_ext, key, val)
@@ -75,7 +75,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test title-level templatetags
         """
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         title_en = page1.get_content_obj(language="en", fallback=False)
         title_it = page1.get_content_obj(language="it", fallback=False)
         title_ext = TitleMeta.objects.create(extended_object=title_en)
@@ -118,7 +118,7 @@ class TemplateMetaTest(BaseTest):
         """
         Test title-level templatetags
         """
-        page1, page2 = self.get_pages()
+        page1, page2 = self.create_pages()
         content_en = page1.get_content_obj(language="en", fallback=False)
         content_en.meta_description = self.title_data["description"]
         content_en.save()
