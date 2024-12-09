@@ -1,8 +1,13 @@
 import ast
 
-from cms.extensions import PageExtension, TitleExtension
+try:
+    from cms.extensions import PageContentExtension, PageExtension
+    from cms.models import Page, PageContent
+except ImportError:
+    from cms.extensions import PageExtension, TitleExtension as PageContentExtension
+    from cms.models import Page, Title as PageContent
+
 from cms.extensions.extension_pool import extension_pool
-from cms.models import Page, Title
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
@@ -98,7 +103,8 @@ class PageMeta(PageExtension):
 extension_pool.register(PageMeta)
 
 
-class TitleMeta(TitleExtension):
+# TODO: renamed too PageContentExtension
+class TitleMeta(PageContentExtension):
     image = FilerFileField(
         null=True,
         blank=True,
@@ -206,7 +212,7 @@ def cleanup_page(sender, instance, **kwargs):
         cache.delete(key)
 
 
-@receiver(pre_delete, sender=Title)
+@receiver(pre_delete, sender=PageContent)
 def cleanup_title(sender, instance, **kwargs):
     key = get_cache_key(instance.page, instance.language)
     cache.delete(key)
@@ -218,6 +224,7 @@ def cleanup_pagemeta(sender, instance, **kwargs):
     for language in instance.extended_object.get_languages():
         key = get_cache_key(instance.extended_object, language)
         cache.delete(key)
+    instance.extended_object.clear_cache()
 
 
 @receiver(post_save, sender=TitleMeta)
@@ -225,6 +232,7 @@ def cleanup_pagemeta(sender, instance, **kwargs):
 def cleanup_titlemeta(sender, instance, **kwargs):
     key = get_cache_key(instance.extended_object.page, instance.extended_object.language)
     cache.delete(key)
+    instance.extended_object.page.clear_cache()
 
 
 if registry:

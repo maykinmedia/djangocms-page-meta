@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("djangocms_page_meta", "0015_defaultmetaimage"),
     ]
-
     operations = [
         migrations.RunPython(generate_default_meta_image_singleton, backwards),
     ]

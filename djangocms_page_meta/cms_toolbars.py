@@ -1,4 +1,3 @@
-from cms.api import get_page_draft
 from cms.cms_toolbars import PAGE_MENU_SECOND_BREAK
 from cms.toolbar.items import Break
 from cms.toolbar_base import CMSToolbar
@@ -25,7 +24,8 @@ PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
 class PageToolbarMeta(CMSToolbar):
     def populate(self):
         # always use draft if we have a page
-        self.page = get_page_draft(self.request.current_page)
+        # self.page = get_page_draft(self.request.current_page)
+        self.page = self.request.current_page
         if not self.page:
             # Nothing to do
             return
@@ -36,7 +36,7 @@ class PageToolbarMeta(CMSToolbar):
         # check global permissions if CMS_PERMISSIONS is active
         if get_cms_setting("PERMISSION"):
             has_global_current_page_change_permission = has_page_permission(
-                self.request.user, self.request.current_page, "change"
+                self.request.user, self.request.current_page, "change_page"
             )
         else:
             has_global_current_page_change_permission = False
@@ -79,7 +79,7 @@ class PageToolbarMeta(CMSToolbar):
                 meta_menu.add_modal_item(PAGE_META_ITEM_TITLE, url=url, disabled=not_edit_mode, position=position)
             # Title tags
             site_id = self.page.node.site_id
-            titles = self.page.title_set.filter(language__in=get_language_list(site_id))
+            titles = self.page.pagecontent_set.filter(language__in=get_language_list(site_id))
 
             title_extensions = {
                 t.extended_object_id: t

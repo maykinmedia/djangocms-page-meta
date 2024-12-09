@@ -1,6 +1,5 @@
 from cms.toolbar.items import Menu, ModalItem, SubMenu
 from cms.utils.i18n import get_language_object
-from django.contrib.auth.models import Permission, User
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils.encoding import force_str
@@ -12,7 +11,7 @@ from djangocms_page_meta.cms_toolbars import (
 )
 from djangocms_page_meta.models import DefaultMetaImage, PageMeta, TitleMeta
 
-from . import BaseTest
+from .base import BaseTest
 
 
 class ToolbarTest(BaseTest):
@@ -22,7 +21,7 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        request = self.get_page_request(None, self.user, "/", edit=True)
+        request = self.get_page_request(None, self.staff_user)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -34,8 +33,11 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        page1, __ = self.get_pages()
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        page1 = self.create_pages()[0]
+
+        normal_user = self.get_standard_user()
+        request = self.get_page_request(page1, normal_user)
+
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -51,12 +53,10 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page1.is_page_type = True
         page1.save()
-        self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
-        self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
@@ -69,10 +69,8 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        page1, __ = self.get_pages()
-        self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
-        self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        page1 = self.create_pages()[0]
+        request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
@@ -89,10 +87,8 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        page1, __ = self.get_pages()
-        self.user_staff.user_permissions.add(Permission.objects.get(codename="change_page"))
-        self.user_staff = User.objects.get(pk=self.user_staff.pk)
-        request = self.get_page_request(page1, self.user_staff, "/", edit=True)
+        page1 = self.create_pages()[0]
+        request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.find_items(Menu, name="Page")
@@ -106,7 +102,6 @@ class ToolbarTest(BaseTest):
         """
         Test that PageMeta/TitleMeta items are present for superuser
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         NEW_CMS_LANGS = {  # noqa: N806
             1: [
@@ -126,11 +121,12 @@ class ToolbarTest(BaseTest):
             },
         }
 
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         with self.settings(CMS_LANGUAGES=NEW_CMS_LANGS):
-            request = self.get_page_request(page1, self.user, "/", edit=True)
-            toolbar = CMSToolbar(request)
+            request = self.get_page_request(page1, self.staff_user)
+            toolbar = request.toolbar
             toolbar.get_left_items()
+
             page_menu = toolbar.menus["page"]
             meta_menu = page_menu.find_items(SubMenu, name=force_str(PAGE_META_MENU_TITLE))[0].item
             self.assertEqual(
@@ -150,11 +146,11 @@ class ToolbarTest(BaseTest):
         """
         from cms.toolbar.toolbar import CMSToolbar
 
-        page1, __ = self.get_pages()
+        page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
-        title_meta = TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
         default_meta_image = DefaultMetaImage.objects.first()
-        request = self.get_page_request(page1, self.user, "/", edit=True)
+        request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
@@ -177,7 +173,7 @@ class ToolbarTest(BaseTest):
         )
         url_change = False
         url_add = False
-        for title in page1.title_set.all():
+        for title in page1.pagecontent_set.all():
             language = get_language_object(title.language)
             titlemeta_menu = meta_menu.find_items(ModalItem, name="{}...".format(language["name"]))
             self.assertEqual(len(titlemeta_menu), 1)
