@@ -1,18 +1,15 @@
 from cms.cms_toolbars import PAGE_MENU_SECOND_BREAK
+from cms.models import PageContent
 from cms.toolbar.items import Break
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
+from cms.utils.conf import get_cms_setting
 from cms.utils.i18n import get_language_list, get_language_object
 from cms.utils.permissions import has_page_permission
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
 
 from .models import DefaultMetaImage, PageMeta, TitleMeta
-
-try:
-    from cms.utils import get_cms_setting
-except ImportError:
-    from cms.utils.conf import get_cms_setting
 
 
 PAGE_META_MENU_TITLE = _("Meta-information")
@@ -23,8 +20,6 @@ PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
 @toolbar_pool.register
 class PageToolbarMeta(CMSToolbar):
     def populate(self):
-        # always use draft if we have a page
-        # self.page = get_page_draft(self.request.current_page)
         self.page = self.request.current_page
         if not self.page:
             # Nothing to do
@@ -41,10 +36,9 @@ class PageToolbarMeta(CMSToolbar):
         else:
             has_global_current_page_change_permission = False
             # check if user has page edit permission
-        permission = self.request.current_page.has_change_permission(self.request.user)
-        can_change = self.request.current_page and permission
+        permission = self.page.has_change_permission(self.request.user)
+        can_change = self.page and permission
         if has_global_current_page_change_permission or can_change:
-            not_edit_mode = not self.toolbar.edit_mode_active
 
             current_page_menu = self.toolbar.get_or_create_menu("page")
             super_item = current_page_menu.find_first(Break, identifier=PAGE_MENU_SECOND_BREAK)
@@ -76,30 +70,35 @@ class PageToolbarMeta(CMSToolbar):
                 # not in urls
                 pass
             else:
-                meta_menu.add_modal_item(PAGE_META_ITEM_TITLE, url=url, disabled=not_edit_mode, position=position)
-            # Title tags
+                meta_menu.add_modal_item(PAGE_META_ITEM_TITLE, url=url, position=position)
+            # Content tags
             site_id = self.page.node.site_id
-            titles = self.page.pagecontent_set.filter(language__in=get_language_list(site_id))
 
+            contents = PageContent.admin_manager.filter(
+                page=self.page,
+                language__in=get_language_list(site_id)
+            ).current_content()
+
+            # TODO: rename to content extensions
             title_extensions = {
                 t.extended_object_id: t
-                for t in TitleMeta.objects.filter(extended_object_id__in=[title.id for title in titles])
+                for t in TitleMeta.objects.filter(extended_object_id__in=[content.id for content in contents])
             }
 
-            for title in titles:
+            for content in contents:
                 try:
-                    if title.pk in title_extensions:
+                    if content.pk in title_extensions:
                         url = reverse(
-                            "admin:djangocms_page_meta_titlemeta_change", args=(title_extensions[title.pk].pk,)
+                            "admin:djangocms_page_meta_titlemeta_change", args=(title_extensions[content.pk].pk,)
                         )
                     else:
                         url = "{}?extended_object={}".format(
-                            reverse("admin:djangocms_page_meta_titlemeta_add"), title.pk
+                            reverse("admin:djangocms_page_meta_titlemeta_add"), content.pk
                         )
                 except NoReverseMatch:
                     # not in urls
                     pass
                 else:
                     position += 1
-                    language = get_language_object(title.language)
-                    meta_menu.add_modal_item(language["name"], url=url, disabled=not_edit_mode, position=position)
+                    language = get_language_object(content.language)
+                    meta_menu.add_modal_item(language["name"], url=url, position=position)
