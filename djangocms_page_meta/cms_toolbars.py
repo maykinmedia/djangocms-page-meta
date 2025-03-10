@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import DefaultMetaImage, PageMeta, TitleMeta
 
-
 PAGE_META_MENU_TITLE = _("Meta-information")
 PAGE_META_ITEM_TITLE = _("Common")
 PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
@@ -75,8 +74,7 @@ class PageToolbarMeta(CMSToolbar):
             site_id = self.page.node.site_id
 
             contents = PageContent.admin_manager.filter(
-                page=self.page,
-                language__in=get_language_list(site_id)
+                page=self.page, language__in=get_language_list(site_id)
             ).current_content()
 
             # TODO: rename to content extensions
