@@ -1,3 +1,4 @@
+from cms.models import PageContent
 from cms.toolbar.items import Menu, ModalItem, SubMenu
 from cms.utils.i18n import get_language_object
 from django.test.utils import override_settings
@@ -148,7 +149,8 @@ class ToolbarTest(BaseTest):
 
         page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
-        title_meta = TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = TitleMeta.objects.create(extended_object=content)
         default_meta_image = DefaultMetaImage.objects.first()
         request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
@@ -173,7 +175,7 @@ class ToolbarTest(BaseTest):
         )
         url_change = False
         url_add = False
-        for title in page1.pagecontent_set.all():
+        for title in PageContent.admin_manager.filter(page=page1):
             language = get_language_object(title.language)
             titlemeta_menu = meta_menu.find_items(ModalItem, name="{}...".format(language["name"]))
             self.assertEqual(len(titlemeta_menu), 1)

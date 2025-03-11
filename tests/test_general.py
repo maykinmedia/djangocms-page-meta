@@ -1,8 +1,10 @@
+from cms.models import PageContent
 from django.conf import settings
 from django.core.cache import cache
 from django.template.base import Parser
 from django.test import override_settings
 from django.utils.functional import SimpleLazyObject
+from djangocms_versioning.constants import INDICATOR_DESCRIPTIONS
 
 from djangocms_page_meta import models
 from djangocms_page_meta.forms import PageMetaAdminForm, TitleMetaAdminForm
@@ -182,7 +184,8 @@ class PageMetaUtilsTest(BaseTest):
         page1 = self.create_pages()[0]
         page_meta = models.PageMeta.objects.create(extended_object=page1)
         page_meta.save()
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = models.TitleMeta.objects.create(extended_object=content)
         title_meta.save()
 
         models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
@@ -196,29 +199,32 @@ class PageMetaUtilsTest(BaseTest):
         meta = get_page_meta(page1, "it")
         self.assertEqual(meta.extra_custom_props, [("custom", "attr", "foo")])
 
-    # def test_publish_extra(self):
-    #     """
-    #     Test that modified GenericMetaAttribute are not copied multiple times on page publish
-    #     See issue #78
-    #     """
-    #     page1 = self.create_pages()[0]
-    #     page_meta = models.PageMeta.objects.create(extended_object=page1)
-    #     title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
-    #     models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
-    #     models.GenericMetaAttribute.objects.create(title=title_meta, attribute="custom", name="attr", value="bar")
-    #
-    #     page1.publish("en")
-    #     page_meta.extra.first().attribute = "new"
-    #     page_meta.extra.first().save()
-    #     title_meta.extra.first().attribute = "new"
-    #     title_meta.extra.first().save()
-    #
-    #     page1.publish("en")
-    #     public = page1.get_public_object()
-    #     page_meta = models.PageMeta.objects.get(extended_object=public)
-    #     title_meta = models.TitleMeta.objects.get(extended_object=public.get_content_obj("en"))
-    #     self.assertEqual(page_meta.extra.count(), 1)
-    #     self.assertEqual(title_meta.extra.count(), 1)
+    def test_publish_extra(self):
+        """
+        Test that modified GenericMetaAttribute are not copied multiple times on page publish
+        See issue #78
+        """
+        page1 = self.create_pages()[0]
+        page_meta = models.PageMeta.objects.create(extended_object=page1)
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = models.TitleMeta.objects.create(extended_object=content)
+        models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
+        models.GenericMetaAttribute.objects.create(title=title_meta, attribute="custom", name="attr", value="bar")
+
+        version = content.versions.first()
+        version.publish(self.superuser)
+        page_meta.extra.first().attribute = "new"
+        page_meta.extra.first().save()
+        title_meta.extra.first().attribute = "new"
+        title_meta.extra.first().save()
+
+        new_version = version.copy(self.superuser)
+        new_version.publish(self.superuser)
+        public = page1  # page no longer versioned
+        page_meta = models.PageMeta.objects.get(extended_object=public)
+        title_meta = models.TitleMeta.objects.get(extended_object=public.get_content_obj("en"))
+        self.assertEqual(page_meta.extra.count(), 1)
+        self.assertEqual(title_meta.extra.count(), 1)
 
     def test_str_methods(self):
         """
@@ -226,7 +232,8 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1 = self.create_pages()[0]
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = models.TitleMeta.objects.create(extended_object=content)
         default_meta_image = models.DefaultMetaImage.objects.first()
         page_attr = models.GenericMetaAttribute.objects.create(
             page=page_meta, attribute="custom", name="attr", value="foo"
@@ -236,7 +243,7 @@ class PageMetaUtilsTest(BaseTest):
         )
 
         self.assertEqual(str(page_meta), f"Page Meta for {page1}")
-        self.assertEqual(str(title_meta), f"Title Meta for {page1.get_content_obj('en')}")
+        self.assertEqual(str(title_meta), f"Page Content Meta for {content}: {INDICATOR_DESCRIPTIONS['draft']}")
         self.assertEqual(str(default_meta_image), f"{default_meta_image.pk}")
         self.assertEqual(str(page_attr), f"Attribute {page_attr.name} for {page_meta}")
         self.assertEqual(str(title_attr), f"Attribute {title_attr.name} for {title_meta}")
@@ -258,7 +265,8 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1 = self.create_pages()[0]
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = models.TitleMeta.objects.create(extended_object=content)
 
         # cache objects
         for language in page1.get_languages():
@@ -299,7 +307,8 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1 = self.create_pages()[0]
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_content_obj("en"))
+        content = PageContent.admin_manager.get(page=page1, language="en")
+        title_meta = models.TitleMeta.objects.create(extended_object=content)
 
         # cache objects - cache keys must be pre calculated as the page will not exist anymore when running the
         # asserts

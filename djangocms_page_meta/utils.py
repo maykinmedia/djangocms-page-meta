@@ -1,3 +1,4 @@
+from cms.models import PageContent
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language_from_request
@@ -39,7 +40,7 @@ def get_page_meta(page, language):
     meta = cache.get(meta_key)
     if not meta:
         meta = Meta()
-        title = page.get_content_obj(language)
+        title = PageContent.admin_manager.filter(page=page, language=language).current_content().get()
         default_meta_image = DefaultMetaImage.objects.first().image
         meta.extra_custom_props = []
 
