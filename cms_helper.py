@@ -19,6 +19,7 @@ HELPER_SETTINGS = dict(
         "taggit",
         "taggit_autosuggest",
         "meta",
+        "djangocms_versioning",
         # "djangocms_page_tags",
         "tests.test_utils",
     ],

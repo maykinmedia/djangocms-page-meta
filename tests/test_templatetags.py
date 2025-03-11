@@ -1,3 +1,5 @@
+from cms.models import PageContent
+
 from djangocms_page_meta.models import GenericMetaAttribute, PageMeta, TitleMeta
 
 from .base import BaseTest
@@ -17,8 +19,8 @@ class TemplateMetaTest(BaseTest):
         GenericMetaAttribute.objects.create(page=page_ext, attribute="custom", name="attr", value="foo")
         # page1.publication_end_date = page1.publication_date + timedelta(days=1)
         page1.save()
-        # page1.publish("it")
-        # page1.publish("en")
+        self.publish_page(page1, "it")
+        self.publish_page(page1, "en")
 
         response = self.client.get(page1.get_absolute_url("en"))
         self.assertContains(response, '<meta name="twitter:domain" content="example.com">')
@@ -39,7 +41,7 @@ class TemplateMetaTest(BaseTest):
         page_ext = PageMeta.objects.create(extended_object=page1)
         page_ext.save()
         page1.save()
-        # page1.publish("en")
+        self.publish_page(page1, "en")
         response = self.client.get(page1.get_absolute_url("en"))
         self.assertNotContains(response, '<meta name="robots"')
 
@@ -53,7 +55,7 @@ class TemplateMetaTest(BaseTest):
             setattr(page_ext, key, val)
         page_ext.save()
         page1.save()
-        # page1.publish("en")
+        self.publish_page(page1, "en")
         response = self.client.get(page1.get_absolute_url("en"))
         self.assertContains(response, '<meta name="robots" content="noindex">')
 
@@ -67,7 +69,7 @@ class TemplateMetaTest(BaseTest):
             setattr(page_ext, key, val)
         page_ext.save()
         page1.save()
-        # page1.publish("en")
+        self.publish_page(page1, "en")
         response = self.client.get(page1.get_absolute_url("en"))
         self.assertContains(response, '<meta name="robots" content="none, noimageindex, noarchive">')
 
@@ -76,20 +78,20 @@ class TemplateMetaTest(BaseTest):
         Test title-level templatetags
         """
         page1 = self.create_pages()[0]
-        title_en = page1.get_content_obj(language="en", fallback=False)
-        title_it = page1.get_content_obj(language="it", fallback=False)
-        title_ext = TitleMeta.objects.create(extended_object=title_en)
+        content_en = PageContent.admin_manager.get(page=page1, language="en")
+        content_it = PageContent.admin_manager.get(page=page1, language="it")
+        title_ext = TitleMeta.objects.create(extended_object=content_en)
         for key, val in self.title_data.items():
             setattr(title_ext, key, val)
         title_ext.save()
         GenericMetaAttribute.objects.create(title=title_ext, attribute="custom", name="attr", value="foo-en")
-        title_ext = TitleMeta.objects.create(extended_object=title_it)
+        title_ext = TitleMeta.objects.create(extended_object=content_it)
         for key, val in self.title_data_it.items():
             setattr(title_ext, key, val)
         title_ext.save()
         GenericMetaAttribute.objects.create(title=title_ext, attribute="custom", name="attr", value="foo-it")
-        # page1.publish("it")
-        # page1.publish("en")
+        self.publish_page(page1, "it")
+        self.publish_page(page1, "en")
 
         # Italian language
         response = self.client.get(page1.get_absolute_url("it"))
@@ -119,18 +121,18 @@ class TemplateMetaTest(BaseTest):
         Test title-level templatetags
         """
         page1, page2 = self.create_pages()
-        content_en = page1.get_content_obj(language="en", fallback=False)
+        content_en = PageContent.admin_manager.get(page=page1, language="en")
         content_en.meta_description = self.title_data["description"]
         content_en.save()
-        content_it = page1.get_content_obj(language="it", fallback=False)
+        content_it = PageContent.admin_manager.get(page=page1, language="it")
         content_it.meta_description = self.title_data_it["description"]
         content_it.save()
         content_ext_en = TitleMeta.objects.create(extended_object=content_en)
         content_ext_en.save()
         content_ext_it = TitleMeta.objects.create(extended_object=content_it)
         content_ext_it.save()
-        # page1.publish("it")
-        # page1.publish("en")
+        self.publish_page(page1, "it")
+        self.publish_page(page1, "en")
 
         # page1 = page1.get_draft_object()
         content_en = page1.get_content_obj(language="en", fallback=False)
@@ -179,10 +181,10 @@ class TemplateMetaTest(BaseTest):
         self.assertContains(response, '<meta name="twitter:description" content="twitter custom description">')
         self.assertContains(response, '<meta property="og:description" content="og custom description">')
 
-        title2_en = page2.get_content_obj(language="en", fallback=False)
-        title2_en.meta_description = self.title_data["description"]
-        title2_en.save()
-        # page2.publish("en")
+        content2_en = PageContent.admin_manager.get(page=page2, language="en")
+        content2_en.meta_description = self.title_data["description"]
+        content2_en.save()
+        self.publish_page(page2, "en")
         # English language
         # A page with no title meta, and yet the meta description is there
         response = self.client.get(page2.get_absolute_url("en"))
