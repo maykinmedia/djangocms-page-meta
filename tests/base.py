@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from app_helper.base_test import CreateTestDataMixin
 from cms.api import create_page, create_page_content
+from cms.models import PageContent
 from cms.test_utils.testcases import CMSTestCase
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
@@ -90,12 +91,14 @@ class BaseTest(CMSTestCase):
 
             main_data = deepcopy(page_data[self.language])
             main_data["language"] = self.language
+            main_data["created_by"] = self.superuser
             page = create_page(**main_data)
 
             for lang in self.languages[1:]:
                 context_data = deepcopy(page_data[lang])
                 context_data["language"] = lang
                 context_data["page"] = page
+                context_data["created_by"] = self.superuser
                 create_page_content(**context_data)
 
             if not home_set:
@@ -118,3 +121,8 @@ class BaseTest(CMSTestCase):
     def create_filer_image_object(self):
         self.filer_image = self.create_filer_image(self.staff_user, self.image_name)
         return self.filer_image
+
+    def publish_page(self, page, language):
+        content = PageContent.admin_manager.get(page=page, language=language)
+        version = content.versions.first()
+        version.publish(self.superuser)
