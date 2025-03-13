@@ -86,7 +86,8 @@ class PageToolbarMeta(CMSToolbar):
                         .current_content()
                         .first()
                     )
-                    contents.append(content)
+                    if content:
+                        contents.append(content)
 
             # TODO: rename to content extensions
             title_extensions = {
