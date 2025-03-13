@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.template.base import Parser
 from django.test import override_settings
 from django.utils.functional import SimpleLazyObject
-from djangocms_versioning.constants import INDICATOR_DESCRIPTIONS
+from djangocms_versioning.models import Version
 
 from djangocms_page_meta import models
 from djangocms_page_meta.forms import PageMetaAdminForm, TitleMetaAdminForm
@@ -242,8 +242,10 @@ class PageMetaUtilsTest(BaseTest):
             title=title_meta, attribute="custom", name="attr", value="bar"
         )
 
+        version = Version.objects.get_for_content(content)
+
         self.assertEqual(str(page_meta), f"Page Meta for {page1}")
-        self.assertEqual(str(title_meta), f"Page Content Meta for {content}: {INDICATOR_DESCRIPTIONS['draft']}")
+        self.assertEqual(str(title_meta), f"Page Content Meta for {content}: {version.verbose_name()}")
         self.assertEqual(str(default_meta_image), f"{default_meta_image.pk}")
         self.assertEqual(str(page_attr), f"Attribute {page_attr.name} for {page_meta}")
         self.assertEqual(str(title_attr), f"Attribute {title_attr.name} for {title_meta}")

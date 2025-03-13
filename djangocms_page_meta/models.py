@@ -24,8 +24,6 @@ try:
 except ImportError:
     registry = None
 
-from djangocms_versioning.constants import INDICATOR_DESCRIPTIONS
-
 
 class PageMeta(PageExtension):
     image = FilerFileField(
@@ -129,12 +127,12 @@ class TitleMeta(PageContentExtension):
         verbose_name = _("Page meta info (language-dependent)")
         verbose_name_plural = _("Page meta info (language-dependent)")
 
-    def get_version_status(self):
-        state = self.extended_object.versions.first().state
-        return INDICATOR_DESCRIPTIONS[state]
+    def get_version_name(self):
+        version = self.extended_object.versions.first()
+        return version.verbose_name()
 
     def __str__(self):
-        return _("Page Content Meta for {0}").format(self.extended_object) + f": {self.get_version_status()}"
+        return _("Page Content Meta for {0}").format(self.extended_object) + f": {self.get_version_name()}"
 
     @property
     def locale(self):
