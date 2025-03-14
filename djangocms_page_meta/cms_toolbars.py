@@ -73,9 +73,21 @@ class PageToolbarMeta(CMSToolbar):
             # Content tags
             site_id = self.page.node.site_id
 
-            contents = PageContent.admin_manager.filter(
-                page=self.page, language__in=get_language_list(site_id)
-            ).current_content()
+            contents = []
+            for language in get_language_list(site_id=site_id):
+                if self.current_lang == language and self.toolbar.obj:
+                    contents.append(self.toolbar.obj)
+                else:
+                    content = (
+                        PageContent.admin_manager.filter(
+                            page=self.page,
+                            language=language,
+                        )
+                        .current_content()
+                        .first()
+                    )
+                    if content:
+                        contents.append(content)
 
             # TODO: rename to content extensions
             title_extensions = {
@@ -99,4 +111,6 @@ class PageToolbarMeta(CMSToolbar):
                 else:
                     position += 1
                     language = get_language_object(content.language)
-                    meta_menu.add_modal_item(language["name"], url=url, position=position)
+                    meta_menu.add_modal_item(
+                        language["name"], url=url, position=position, active=self.current_lang == language["code"]
+                    )
