@@ -19,6 +19,11 @@ PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
 @toolbar_pool.register
 class PageToolbarMeta(CMSToolbar):
     def populate(self):
+
+        # if not a page content
+        if not isinstance(self.toolbar.obj, PageContent):
+            return
+
         self.page = self.request.current_page
         if not self.page:
             # Nothing to do

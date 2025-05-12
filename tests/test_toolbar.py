@@ -1,5 +1,6 @@
 from cms.models import PageContent
 from cms.toolbar.items import Menu, ModalItem, SubMenu
+from cms.toolbar.toolbar import CMSToolbar
 from cms.utils.i18n import get_language_object
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -20,7 +21,6 @@ class ToolbarTest(BaseTest):
         """
         Test that no page menu is present if request not in a page
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         request = self.get_page_request(None, self.staff_user)
         toolbar = CMSToolbar(request)
@@ -32,7 +32,6 @@ class ToolbarTest(BaseTest):
         """
         Test that no page menu is present if user has no perm
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         page1 = self.create_pages()[0]
 
@@ -52,7 +51,6 @@ class ToolbarTest(BaseTest):
         """
         Test that page meta menu is not displayed on page types.
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         page1 = self.create_pages()[0]
         page1.is_page_type = True
@@ -68,11 +66,13 @@ class ToolbarTest(BaseTest):
         """
         Test that page meta menu is present if user has Page.change_perm
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         page1 = self.create_pages()[0]
+        content = PageContent.admin_manager.filter(page=page1, language="en").first()
         request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
+        toolbar.set_object(content)
+        toolbar.populate()
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
         meta_menu = page_menu.find_items(SubMenu, name=force_str(PAGE_META_MENU_TITLE))[0].item
@@ -86,7 +86,6 @@ class ToolbarTest(BaseTest):
         """
         Test that no page menu is present if user has general page Page.change_perm but not permission on current page
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         page1 = self.create_pages()[0]
         request = self.get_page_request(page1, self.staff_user)
@@ -123,9 +122,13 @@ class ToolbarTest(BaseTest):
         }
 
         page1 = self.create_pages()[0]
+        content = PageContent.admin_manager.filter(page=page1, language="en").first()
+
         with self.settings(CMS_LANGUAGES=NEW_CMS_LANGS):
             request = self.get_page_request(page1, self.staff_user)
-            toolbar = request.toolbar
+            toolbar = CMSToolbar(request)
+            toolbar.set_object(content)
+            toolbar.populate()
             toolbar.get_left_items()
 
             page_menu = toolbar.menus["page"]
@@ -145,7 +148,6 @@ class ToolbarTest(BaseTest):
         """
         Test that PageMeta/TitleMeta items are present for superuser if PageMeta/TitleMeta exists for current page
         """
-        from cms.toolbar.toolbar import CMSToolbar
 
         page1 = self.create_pages()[0]
         page_ext = PageMeta.objects.create(extended_object=page1)
@@ -154,6 +156,8 @@ class ToolbarTest(BaseTest):
         default_meta_image = DefaultMetaImage.objects.first()
         request = self.get_page_request(page1, self.staff_user)
         toolbar = CMSToolbar(request)
+        toolbar.set_object(content)
+        toolbar.populate()
         toolbar.get_left_items()
         page_menu = toolbar.menus["page"]
         meta_menu = page_menu.find_items(SubMenu, name=force_str(PAGE_META_MENU_TITLE))[0].item
