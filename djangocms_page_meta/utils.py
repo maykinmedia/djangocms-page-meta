@@ -40,7 +40,10 @@ def get_page_meta(page, language):
     meta = cache.get(meta_key)
     if not meta:
         meta = Meta()
-        title = PageContent.admin_manager.filter(page=page, language=language).current_content().get()
+        try:
+            title = PageContent.admin_manager.filter(page=page, language=language).current_content().get()
+        except PageContent.DoesNotExist:
+            return None
         default_meta_image = DefaultMetaImage.objects.first().image
         meta.extra_custom_props = []
 
